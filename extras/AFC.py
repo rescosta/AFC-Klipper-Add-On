@@ -272,6 +272,13 @@ class afc:
         self.enable_assist          = config.getboolean("enable_assist",        True)
         # Weight spool has to be below to activate print assist
         self.enable_assist_weight   = config.getfloat("enable_assist_weight",   500.0)
+        # Weight (g) spool has to be below to slow down lane load/feed moves. A light/near-empty
+        # spool has less rotational inertia and can jump off its holder if pulled at normal
+        # speed. None (default) disables this feature entirely.
+        self.low_weight_load_threshold    = config.getfloat("low_weight_load_threshold", None)
+        # Speed multiplier applied to lane moves when below low_weight_load_threshold
+        self.low_weight_load_speed_factor = config.getfloat("low_weight_load_speed_factor", 0.5,
+                                                             minval=0.1, maxval=1.0)
         self.enable_hub_runout      = config.getboolean("enable_hub_runout",    True)
         self.enable_tool_runout     = config.getboolean("enable_tool_runout",   True)
         self.enable_runout_in_bypass = config.getboolean("enable_runout_in_bypass", False)

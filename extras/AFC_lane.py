@@ -805,29 +805,42 @@ class AFCLane:
                                                                                        distance=distance)
         self.move(distance, dist_hub_move_speed, dist_hub_move_accel, assist_active)
 
+    def _low_weight_speed_scale(self) -> float:
+        """
+        Returns a speed multiplier (<1.0) when the spool is light enough that lane moves
+        at normal speed risk knocking it off its holder (low rotational inertia). Returns
+        1.0 (no change) when the feature is disabled (low_weight_load_threshold is None)
+        or weight tracking isn't active (weight <= 0).
+        """
+        threshold = self.afc.low_weight_load_threshold
+        if threshold is not None and 0 < self.weight < threshold:
+            return self.afc.low_weight_load_speed_factor
+        return 1.0
+
     def get_speed_accel(self, mode: SpeedMode, distance=None) -> float:
         """
         Helper function to allow selecting the right speed and acceleration of movements
         mode (Enum SpeedMode): Identifies which speed to use.
         """
+        scale = self._low_weight_speed_scale()
         if distance is not None and mode is SpeedMode.NONE:
             if abs(distance) > 200:
-                return self.long_moves_speed, self.long_moves_accel, True
+                return self.long_moves_speed * scale, self.long_moves_accel, True
             else:
-                return self.short_moves_speed, self.long_moves_accel, False
+                return self.short_moves_speed * scale, self.long_moves_accel, False
         else:
             if self.afc._get_quiet_mode() == True:
-                return self.afc.quiet_moves_speed, self.short_moves_accel
+                return self.afc.quiet_moves_speed * scale, self.short_moves_accel
             elif mode == SpeedMode.LONG:
-                return self.long_moves_speed, self.long_moves_accel
+                return self.long_moves_speed * scale, self.long_moves_accel
             elif (mode == SpeedMode.SHORT
                   or mode == SpeedMode.CALIBRATION
                   or mode == SpeedMode.HUB):
-                return self.short_moves_speed, self.short_moves_accel
+                return self.short_moves_speed * scale, self.short_moves_accel
             elif (mode == SpeedMode.DIST_HUB):
-                return self.dist_hub_move_speed, self.dist_hub_move_accel
+                return self.dist_hub_move_speed * scale, self.dist_hub_move_accel
             else:
-                return self.short_moves_speed, self.short_moves_accel
+                return self.short_moves_speed * scale, self.short_moves_accel
 
     def get_active_assist(self, distance, assist_active:AssistActive) -> bool:
         """
