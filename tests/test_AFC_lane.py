@@ -196,6 +196,10 @@ def _make_afc_lane(fullname="AFC_stepper lane1"):
     lane.fullname = fullname
     lane.name = parts[-1]
     lane.afc = MagicMock()
+    # Real config default is None (feature disabled) - a bare MagicMock() here isn't
+    # comparable to a number and breaks _low_weight_speed_scale()'s "0 < weight < threshold".
+    lane.afc.low_weight_load_threshold = None
+    lane.afc.low_weight_load_speed_factor = 0.5
     lane.unit = "Turtle_1"
     lane.unit_obj = MagicMock()
     lane.hub_obj = None
