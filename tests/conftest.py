@@ -418,6 +418,8 @@ class MockAFC:
         self.ignore_spoolman_material_temps = False
         self.auto_spool_switch = False
         self.auto_spool_switch_threshold = 25.0
+        self.low_weight_load_threshold = None
+        self.low_weight_load_speed_factor = 0.5
         self.default_material_type = "PLA"
         self.bypass = MagicMock()
         self.save_vars = MagicMock()
