@@ -484,7 +484,12 @@ class Espooler:
         timer_stats_callback timer.
         """
         if self.afc_motor_fwd is not None or self.afc_motor_rwd is not None:
-            self.reactor.update_timer( self.stats_timer, self.reactor.monotonic() + 30 )
+###
+            lane_index = list(self.afc.lanes.keys()).index(self.name)
+            self.reactor.update_timer( self.stats_timer, self.reactor.monotonic() + 30 + lane_index * 2 )
+###
+            #self.reactor.update_timer( self.stats_timer, self.reactor.monotonic() + 30 )
+            
         else:
             self.logger.info(f"Not starting timer for {self.name}")
 
@@ -516,10 +521,16 @@ class Espooler:
         """
         Callback function that runs every 30 seconds that checks and see if espooler
         active time values need to be sent to moonraker. This function will not
-        send data to moonraker if printer is currently in a print and printing
+        send data to moonraker if printer is currently in a print and printing,
+        or if any lane is mid-PREP (loading/homing).
         """
-        if not self.afc.function.is_printing(True):
+
+        if (not self.afc.function.is_printing(True)
+            and not any(lane.prep_active for lane in self.afc.lanes.values())):
             self.stats.update_database()
+
+    #    if not self.afc.function.is_printing(True):
+    #        self.stats.update_database()
 
         return self.reactor.monotonic() + 30
 
