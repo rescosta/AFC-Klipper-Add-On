@@ -841,7 +841,7 @@ class afc:
             pheaters.set_temperature(temp_state["extruder"].get_heater(), temp_state["target_temp"], wait=False)
             self.logger.info(f"Restoring extruder temperature to {temp_state['target_temp']} for {temp_state['extruder'].name}")
         except Exception:
-            self.logger.debug("Unable to restore extruder temperature", exc_info=True)
+            self.logger.debug("Unable to restore extruder temperature", traceback=traceback.format_exc())
 
     def _set_display_status(self, variable: str, value: bool) -> None:
         """
@@ -861,7 +861,7 @@ class afc:
                 self.gcode.run_script_from_command(
                     f"_AFC_DISPLAY_STATUS VARIABLE={variable} VALUE={value}")
             except Exception:
-                self.logger.debug("_AFC_DISPLAY_STATUS macro raised an error", exc_info=True)
+                self.logger.debug("_AFC_DISPLAY_STATUS macro raised an error", traceback=traceback.format_exc())
 
     def _set_quiet_mode(self, val):
         """
@@ -1182,7 +1182,7 @@ class afc:
                 self.speed                  = self.gcode_move.speed
                 self.speed_factor           = self.gcode_move.speed_factor
                 self.absolute_coord         = self.gcode_move.absolute_coord
-                self.absolute_extrude       = self.gcode_move.absolute_extrude
+                self.absolute_extrude       = getattr(self.gcode_move, 'allow_absolute_extrude', getattr(self.gcode_move, 'absolute_extrude', True))
                 self.extrude_factor         = self.gcode_move.extrude_factor
                 # Only rounded for the log message below, stored position values keep full precision
                 msg = f"Saving position {round_floats(self.last_toolhead_position)}"
@@ -1246,7 +1246,7 @@ class afc:
 
         # Restore absolute coords
         self.gcode_move.absolute_coord      = self.absolute_coord
-        self.gcode_move.absolute_extrude    = self.absolute_extrude
+        setattr(self.gcode_move, 'allow_absolute_extrude' if hasattr(self.gcode_move, 'allow_absolute_extrude') else 'absolute_extrude', self.absolute_extrude)
         self.gcode_move.extrude_factor      = self.extrude_factor
         self.gcode_move.speed               = self.speed
         self.gcode_move.speed_factor        = self.speed_factor

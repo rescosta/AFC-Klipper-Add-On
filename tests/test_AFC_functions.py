@@ -86,6 +86,7 @@ class TestLogToolheadPos:
         func.afc.gcode_move.extrude_factor = 1.0
         func.afc.gcode_move.absolute_coord = True
         func.afc.gcode_move.absolute_extrude = False
+        func.afc.gcode_move.allow_absolute_extrude = False  # new Klipper attribute name, mock needs both
 
     def test_logs_expected_message_with_move_pre(self):
         func = _make_func()
