@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-08-22] (local, rescosta fork)
+### Fixed
+- Klipper renamed GCodeMove.absolute_extrude to allow_absolute_extrude in commit 58bd67db
+  (v0.13.0-741, 2026-08-19). AFC still accessed the old name directly in 5 places (AFC.py
+  save_pos()/restore_pos(), AFC_functions.py log_toolhead_pos()/check_absolute_mode()), causing
+  an AttributeError that shut down Klipper mid-toolchange on any Klipper >= v0.13.0-741. Fixed to
+  support both old and new Klipper via getattr()/hasattr()/setattr() fallback, since not everyone
+  updates Klipper at the same time. Reported upstream: issue #837.
+- Two pre-existing bugs where self.logger.debug(msg, exc_info=True) was called, but AFC's own
+  logger does not accept that kwarg (only the standard library logging module does) -- the
+  exception handler itself crashed with a TypeError instead of logging the real error
+  (restore_toolhead_temp(), _set_display_status()). Switched both to
+  traceback=traceback.format_exc(), which the AFC logger does accept.
+
 ## [2026-08-15]
 ### Breaking Change
 - `RESET_AFC_MAPPING` has now been renamed to `AFC_RESET_MAPPING`
